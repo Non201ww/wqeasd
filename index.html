@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anatomy Rabbit Mood Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@330;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS: ปรับโทนสีตามอารมณ์ */
+        body {
+            font-family: 'Kanit', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: background-color 0.5s ease;
+        }
+
+        body.love-mode {
+            background: linear-gradient(135deg, #ffafbd, #ffc3a0); /* โทนชมพู สดใส */
+        }
+
+        body.sad-mode {
+            background: linear-gradient(135deg, #a7d9df, #c9ccd6); /* โทนฟ้าหม่นๆ เทาๆ */
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            transition: box-shadow 0.3s ease;
+        }
+
+        h1 { margin-bottom: 10px; }
+        h1.love-mode { color: #ff5c8d; }
+        h1.sad-mode { color: #6a82a0; }
+
+        .lyric-box {
+            background: #fff0f5;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-style: italic;
+            font-size: 1.1em;
+            color: #444;
+            border-left: 5px solid;
+            transition: border-color 0.5s ease;
+        }
+        .love-mode .lyric-box { border-color: #ff80ab; background: #fff0f5; }
+        .sad-mode .lyric-box { border-color: #8fa6c4; background: #eef2f5; }
+
+        input {
+            width: 80%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .love-mode input:focus { border-color: #ff80ab; }
+        .sad-mode input:focus { border-color: #8fa6c4; }
+
+        button {
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin: 5px;
+        }
+        button.love-btn { background: #ff80ab; }
+        button.love-btn:hover { background: #f06292; transform: scale(1.05); }
+        button.sad-btn { background: #8fa6c4; }
+        button.sad-btn:hover { background: #7188a8; transform: scale(1.05); }
+        button.play-next-btn { background: #4caf50; }
+        button.play-next-btn:hover { background: #43a047; }
+
+
+        #result { margin-top: 20px; font-weight: 500; }
+        .music-link {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .love-mode .music-link { color: #ff4081; }
+        .sad-mode .music-link { color: #556e8d; }
+        .music-link:hover { text-decoration: underline; }
+
+        #mode-selection button {
+            margin: 10px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="game-container">
+    <h1 id="main-title">🐰 Anatomy Rabbit</h1>
+    <p id="description-text">เลือกโหมดเพลงที่คุณอยากจะเล่น!</p>
+    
+    <div id="mode-selection">
+        <button class="love-btn" onclick="startGame('love')">❤️ เพลงรัก</button>
+        <button class="sad-btn" onclick="startGame('sad')">💔 เพลงเศร้า</button>
+    </div>
+
+    <div id="game-area" style="display: none;">
+        <div class="lyric-box" id="lyric-text">"..."</div>
+        <input type="text" id="answer-input" placeholder="พิมพ์ชื่อเพลงที่นี่..." autocomplete="off">
+        <br>
+        <button id="submit-button" onclick="checkAnswer()">ส่งคำตอบ</button>
+        <div id="result"></div>
+    </div>
+</div>
+
+<script>
+    const allSongs = {
+        love: [
+            {
+                lyric: "เธอคือคนธรรมดาที่แสนจะพิเศษ ในโลกที่มันวุ่นวาย...",
+                answer: "ธรรมดาแสนพิเศษ",
+                link: "https://music.youtube.com/watch?v=pAnS_F_E5vI"
+            },
+            {
+                lyric: "ทิ้งความเสียใจไว้ข้างหลัง แล้วไปข้างหน้าด้วยกันนะเธอ...",
+                answer: "ขับรถเล่น",
+                link: "https://music.youtube.com/watch?v=g936P_f7C44"
+            },
+            {
+                lyric: "ในค่ำคืนที่มีแสงจันทร์ ในวันที่โลกนั้นยังหมุนไป...",
+                answer: "Moon (ฉันเดินทางเพื่อพบเธอ)",
+                link: "https://music.youtube.com/watch?v=17X2R69-L_Q"
+            }
+        ],
+        sad: [
+            {
+                lyric: "ขอให้โลกนี้ใจดีกับเธอเสมอไป ไม่ว่าเธอจะเจออะไร...",
+                answer: "ขอให้โลกนี้ใจดีกับเธอ",
+                link: "https://music.youtube.com/watch?v=FmN81pM06pI"
+            },
+            {
+                lyric: "ฉันก็ยังคงสงสัย ว่าทำไมหัวใจยังไม่ลืมเธอสักที...",
+                answer: "Wonder Why",
+                link: "https://music.youtube.com/watch?v=mD1_H_79u8U"
+            },
+            {
+                lyric: "ไม่ว่านานเท่าไหร่ สุดท้ายฉันก็ไม่ลืม...",
+                answer: "ลืมไปแล้วว่าต้องลืม",
+                link: "https://music.youtube.com/watch?v=d_kFvP3E9G0"
+            }
+        ]
+    };
+
+    let currentSongs = []; // เพลงในโหมดที่เลือก
+    let currentQuestion = {};
+    let currentMode = '';
+
+    const body = document.body;
+    const container = document.getElementById('game-container');
+    const mainTitle = document.getElementById('main-title');
+    const descriptionText = document.getElementById('description-text');
+    const modeSelection = document.getElementById('mode-selection');
+    const gameArea = document.getElementById('game-area');
+    const lyricText = document.getElementById('lyric-text');
+    const answerInput = document.getElementById('answer-input');
+    const resultDiv = document.getElementById('result');
+    const submitButton = document.getElementById('submit-button');
+
+    function startGame(mode) {
+        currentMode = mode;
+        currentSongs = [...allSongs[mode]]; // คัดลอก array เพื่อสุ่มได้
+
+        // ปรับ CSS ตามโหมด
+        body.className = `${mode}-mode`;
+        container.className = `container ${mode}-mode`;
+        mainTitle.className = `${mode}-mode`;
+        lyricText.className = `lyric-box ${mode}-mode`;
+        answerInput.className = `${mode}-mode`;
+        submitButton.className = `${mode}-btn`; // ตั้งค่าปุ่มส่งคำตอบ
+
+        descriptionText.innerText = mode === 'love' ? "โหมดเพลงรัก: ทายเนื้อเพลงให้ถูก!" : "โหมดเพลงเศร้า: ทายเนื้อเพลงให้ถูก!";
+
+        modeSelection.style.display = 'none'; // ซ่อนปุ่มเลือกโหมด
+        gameArea.style.display = 'block';    // แสดงส่วนเกม
+
+        randomQuestion();
+    }
+
+    function randomQuestion() {
+        if (currentSongs.length === 0) {
+            lyricText.innerText = "✨ จบเกมในโหมดนี้แล้ว คุณเก่งมาก!";
+            answerInput.style.display = "none";
+            submitButton.style.display = "none";
+            resultDiv.innerHTML = `<button class="play-next-btn" onclick="resetGame()">เลือกโหมดใหม่อีกครั้ง</button>`;
+            return;
+        }
+
+        const randomIndex = Math.floor(Math.random() * currentSongs.length);
+        currentQuestion = currentSongs.splice(randomIndex, 1)[0]; // ดึงออกและลบจาก array เพื่อไม่ให้ซ้ำ
+        
+        lyricText.innerText = `"${currentQuestion.lyric}"`;
+        answerInput.value = "";
+        resultDiv.innerHTML = "";
+        answerInput.style.display = "block";
+        submitButton.style.display = "inline-block";
+        submitButton.innerText = "ส่งคำตอบ";
+        submitButton.onclick = checkAnswer;
+    }
+
+    function checkAnswer() {
+        const userInput = answerInput.value.trim();
+        if (!userInput) {
+            resultDiv.innerHTML = `<span style="color: orange;">กรุณาพิมพ์ชื่อเพลงด้วยนะ!</span>`;
+            return;
+        }
+
+        if (userInput === currentQuestion.answer) {
+            resultDiv.innerHTML = `
+                <span style="color: green;">ถูกต้องแล้วจ้า! ✨</span><br>
+                <a href="${currentQuestion.link}" target="_blank" class="music-link">👉 คลิกไปฟังเพลงนี้กันเลย</a><br>
+            `;
+            submitButton.innerText = "ข้อต่อไป";
+            submitButton.onclick = randomQuestion; // เปลี่ยนปุ่มเป็น "ข้อต่อไป"
+            answerInput.style.display = "none"; // ซ่อนช่องพิมพ์
+        } else {
+            resultDiv.innerHTML = `<span style="color: red;">ยังไม่ใช่... ลองใหม่อีกนิดนะ 🐰</span>`;
+        }
+    }
+
+    function resetGame() {
+        body.className = '';
+        container.className = 'container';
+        mainTitle.className = '';
+        descriptionText.innerText = 'เลือกโหมดเพลงที่คุณอยากจะเล่น!';
+        modeSelection.style.display = 'block';
+        gameArea.style.display = 'none';
+        answerInput.style.display = 'block';
+        submitButton.style.display = 'inline-block';
+        resultDiv.innerHTML = '';
+    }
+</script>
+
+</body>
+</html>
